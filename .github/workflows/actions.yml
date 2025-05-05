@@ -1,31 +1,30 @@
 name: Build and Push Docker Images to ECR
 
 on:
-  push:
-    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
-  # test:
-  #   runs-on: ubuntu-latest
+  test:
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #   - uses: actions/checkout@v4
+    steps:
+    - uses: actions/checkout@v4
     
-  #   - name: Set up Python
-  #     uses: actions/setup-python@v4
-  #     with:
-  #       python-version: '3.x'
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
 
-  #   - name: Install dependencies
-  #     run: pip install boto3 paramiko
+    - name: Install dependencies
+      run: pip install boto3 paramiko
 
-  #   - name: Run smoke test
-  #     env:
-  #       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #       AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-  #       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-  #     run: python SmokeTest.py
+    - name: Run smoke test
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      run: python SmokeTest.py
 
   build-and-push:
     # needs: test
