@@ -53,12 +53,9 @@ spec:
         - containerPort: 8080
         env:
         - name: DATABASE_URL
-          value: mysql+pymysql://root:password@db-service:3306/portfolio
+          value: "mysql+pymysql://root:password@db-service:3306/portfolio"
         - name: SECRET_KEY
-          valueFrom:
-            secretKeyRef:
-              name: portfolio-secrets
-              key: SECRET_KEY
+          value: "7307537ac6d3eb66bd6a71a8582699972a0a67ad58dd086c9b6d87ca1a73f331d0eedf3cee4b18de4f688b0c647c6ee6d5eebcd9591da544fb45d3a61d438cbe5f35d7e1dd69cdf0356c51172f8af522ad57ebb053996bebe9b807e06280d2c9fe820611ecb1cdd29f3751296df4a17b8489bc08b62fdf2051e14898845f032d8d7c6ebbd2f7622bbd9c60821340969093972f460243b8ea5af0328a1b00a7e2bf826a9ab8eefc24b21b0d181ad3e5f7f4318af11c1d30431af903b29d410f05352ee2bca9fa2dd4d3957619164e8962da28d344a584e4f9847c68861234197c579cc77179b2863b084134dc5bff4a90dcf15485ac0e04b7fc291717abf534a3"
         - name: DEBUG
           value: "true"
   strategy:
