@@ -1,0 +1,64 @@
+name: Deploy to EKS
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: string
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@master
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig \
+            --region ${{ secrets.AWS_REGION }} \
+            --name ${{ secrets.AWS_EKS_CLUSTER_NAME }} \
+            --kubeconfig ./kubeconfig.yaml
+
+      - name: Create namespaces
+        env:
+          KUBECONFIG: ./kubeconfig.yaml
+        run: |
+          kubectl get namespace ${{ inputs.environment }} || kubectl create namespace ${{ inputs.environment }}
+          kubectl get namespace ingress-nginx || kubectl create namespace ingress-nginx
+          kubectl get namespace argo-rollouts || kubectl create namespace argo-rollouts
+
+      - name: Install Argo-Rollouts
+        run: kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
+        env:
+          KUBECONFIG: ./kubeconfig.yaml
+
+      - name: Deploy Ingress Controller
+        env:
+          KUBECONFIG: ./kubeconfig.yaml
+        run: |
+          helm upgrade --install ingress-nginx ingress-nginx \
+            --repo https://kubernetes.github.io/ingress-nginx \
+            --namespace ingress-nginx
+
+      - name: Install Argo Rollouts kubectl plugin
+        run: |
+          curl -LO https://github.com/argoproj/argo-rollouts/releases/latest/download/kubectl-argo-rollouts-linux-amd64
+          chmod +x ./kubectl-argo-rollouts-linux-amd64
+          sudo mv ./kubectl-argo-rollouts-linux-amd64 /usr/local/bin/kubectl-argo-rollouts
