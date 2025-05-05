@@ -1,0 +1,109 @@
+name: Build and Push Docker Images to ECR
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: pip install boto3 paramiko
+
+    - name: Run smoke test
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+        AWS_REGION: ${{ secrets.AWS_REGION }}
+        AWS_AMI_ID: ${{ secrets.AWS_AMI_ID }}
+        AWS_INSTANCE_TYPE: ${{ secrets.AWS_INSTANCE_TYPE }}
+        AWS_KEY_NAME: ${{ secrets.AWS_KEY_NAME }}
+        AWS_SECURITY_GROUP: ${{ secrets.AWS_SECURITY_GROUP }}
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        SSH_USERNAME: ubuntu
+        GIT_REPO_URL: https://github.com/parishoffman/devops-final.git
+      run: python SmokeTest.py
+
+  build-and-push:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Repo
+        uses: actions/checkout@v4
+        with:
+          repository: parishoffman/devops-final
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push Docker images
+        env:
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_URI }}
+          TAG: latest
+        run: |
+          for service in frontend backend; do
+            cd $service
+            docker build -t $service .
+
+            docker tag $service $ECR_REPOSITORY:$service
+
+            docker push $ECR_REPOSITORY:$service
+            cd ..
+          done
+          
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      
+      - name: SSH into QA EC2 and update services
+        env:
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_URI }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          ECR_REPO: ${{ secrets.ECR_REPOSITORY_URI }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_DATABASE: ${{ secrets.DB_DATABASE }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_KEY }}
+        run: |
+          # Using ssh-agent to handle the authentication
+          echo "$SSH_PRIVATE_KEY" > private_key && chmod 600 private_key
+          ssh -o StrictHostKeyChecking=no ubuntu@${EC2_HOST} << EOF
+            export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+            export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+            export AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}
+                        
+            # Stop existing containers if they exist
+            docker stop frontend backend || true
+            docker rm frontend backend || true
+            
+            git clone git@github.com:parishoffman/devops-final.git
+            cd devops-final
+            docker compose up
+          EOF
+          
