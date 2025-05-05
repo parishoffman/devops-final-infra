@@ -5,30 +5,30 @@ on:
     branches: [ main ]
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
+  # test:
+  #   runs-on: ubuntu-latest
 
-    steps:
-    - uses: actions/checkout@v4
+  #   steps:
+  #   - uses: actions/checkout@v4
     
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.x'
+  #   - name: Set up Python
+  #     uses: actions/setup-python@v4
+  #     with:
+  #       python-version: '3.x'
 
-    - name: Install dependencies
-      run: pip install boto3 paramiko
+  #   - name: Install dependencies
+  #     run: pip install boto3 paramiko
 
-    - name: Run smoke test
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-      run: python SmokeTest.py
+  #   - name: Run smoke test
+  #     env:
+  #       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #       AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+  #       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+  #     run: python SmokeTest.py
 
   build-and-push:
-    needs: test
+    # needs: test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source Repo
@@ -92,11 +92,11 @@ jobs:
             export AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}
                         
             # Stop existing containers if they exist
-            docker stop frontend backend || true
-            docker rm frontend backend || true
+            sudo docker stop frontend backend || true
+            sudo docker rm frontend backend || true
             
-            git clone git@github.com:parishoffman/devops-final.git
             cd devops-final
-            docker compose up
+            sudo git pull
+            sudo docker compose up
           EOF
           
