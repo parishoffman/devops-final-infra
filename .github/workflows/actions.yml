@@ -57,9 +57,9 @@ jobs:
             cd $service
             docker build -t $service .
 
-            docker tag $service $ECR_REPOSITORY:$service
+            docker tag $service $ECR_REPOSITORY/$service:latest
 
-            docker push $ECR_REPOSITORY:$service
+            docker push $ECR_REPOSITORY/$service:latest
             cd ..
           done
           
