@@ -21,7 +21,7 @@ spec:
         - containerPort: 80
         env:
         - name: REACT_APP_API_URL
-          value: http://backend-service:8080/api
+          value: http://a2016a4ac757b4658ae03524415d0ee8-1094018300.us-east-1.elb.amazonaws.com:8080/
 
 ---
 apiVersion: apps/v1

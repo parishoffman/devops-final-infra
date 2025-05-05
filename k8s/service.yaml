@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: frontend
+  name: frontend-active-service
 spec:
   type: LoadBalancer
   selector:
@@ -27,9 +27,9 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: backend
+  name: backend-active-service
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   selector:
     app: backend
   ports:
