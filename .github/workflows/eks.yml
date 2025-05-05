@@ -62,3 +62,14 @@ jobs:
           curl -LO https://github.com/argoproj/argo-rollouts/releases/latest/download/kubectl-argo-rollouts-linux-amd64
           chmod +x ./kubectl-argo-rollouts-linux-amd64
           sudo mv ./kubectl-argo-rollouts-linux-amd64 /usr/local/bin/kubectl-argo-rollouts
+        env:
+          KUBECONFIG: ./kubeconfig.yaml
+      
+      - name: Deploy the rollouts
+        run: |
+          kubectl -n ${{ inputs.environment }} apply -f k8s/service.yaml
+          kubectl -n ${{ inputs.environment }} apply -f k8s/rollout.yaml
+          kubectl argo rollouts set image frontend frontend="759743607521.dkr.ecr.us-east-1.amazonaws.com/frontend:latest" -n ${{ inputs.environment }}
+          kubectl argo rollouts set image backend backend="759743607521.dkr.ecr.us-east-1.amazonaws.com/backend:latest" -n ${{ inputs.environment }}
+      env:
+        KUBECONFIG: ./kubeconfig.yaml

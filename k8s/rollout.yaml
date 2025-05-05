@@ -1,0 +1,68 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: frontend-rollout
+  labels:
+    app: frontend
+spec:
+  replicas: 2
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: 759743607521.dkr.ecr.us-east-1.amazonaws.com/frontend:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: REACT_APP_API_URL
+          value: http://backend-service:8080/api
+  strategy:
+    blueGreen:
+      activeService: frontend-active-service
+      previewService: frontend-preview-service
+      autoPromotionEnabled: false
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: backend-rollout
+  labels:
+    app: backend
+spec:
+  replicas: 2
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: 759743607521.dkr.ecr.us-east-1.amazonaws.com/backend:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: DATABASE_URL
+          value: mysql+pymysql://root:password@db-service:3306/portfolio
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: portfolio-secrets
+              key: SECRET_KEY
+        - name: DEBUG
+          value: "true"
+  strategy:
+    blueGreen:
+      activeService: backend-active-service
+      previewService: backend-preview-service
+      autoPromotionEnabled: false
