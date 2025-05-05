@@ -25,7 +25,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          
+
       - name: Login to ECR
         uses: aws-actions/amazon-ecr-login@v2
 
@@ -71,5 +71,5 @@ jobs:
           kubectl -n ${{ inputs.environment }} apply -f k8s/rollout.yaml
           kubectl argo rollouts set image frontend frontend="759743607521.dkr.ecr.us-east-1.amazonaws.com/frontend:latest" -n ${{ inputs.environment }}
           kubectl argo rollouts set image backend backend="759743607521.dkr.ecr.us-east-1.amazonaws.com/backend:latest" -n ${{ inputs.environment }}
-      env:
-        KUBECONFIG: ./kubeconfig.yaml
+        env:
+          KUBECONFIG: ./kubeconfig.yaml
