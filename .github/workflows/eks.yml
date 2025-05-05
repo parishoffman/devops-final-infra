@@ -69,7 +69,7 @@ jobs:
         run: |
           kubectl -n ${{ inputs.environment }} apply -f k8s/service.yaml
           kubectl -n ${{ inputs.environment }} apply -f k8s/rollout.yaml
-          kubectl argo rollouts set image frontend frontend="759743607521.dkr.ecr.us-east-1.amazonaws.com/frontend:latest" -n ${{ inputs.environment }}
-          kubectl argo rollouts set image backend backend="759743607521.dkr.ecr.us-east-1.amazonaws.com/backend:latest" -n ${{ inputs.environment }}
+          kubectl argo rollouts set image frontend-rollout frontend="759743607521.dkr.ecr.us-east-1.amazonaws.com/frontend:latest" -n ${{ inputs.environment }}
+          kubectl argo rollouts set image backend-rollout backend="759743607521.dkr.ecr.us-east-1.amazonaws.com/backend:latest" -n ${{ inputs.environment }}
         env:
           KUBECONFIG: ./kubeconfig.yaml
