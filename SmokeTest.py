@@ -7,16 +7,11 @@ import io
 # AWS credentials are passed via environment variables
 ec2 = boto3.resource('ec2', region_name='us-east-1')
 instance = ec2.create_instances(
-    ImageId=os.getenv('AWS_AMI_ID'),
+    ImageId='ami-04ae724346b173455',
     MinCount=1, MaxCount=1,
     InstanceType='t2.large',
-    KeyName='SSHkey',
-    SecurityGroupIds=[
-        'sg-06bc98aae2851c95d', 
-        'sg-0b612366973fc03e9',
-        'sg-0243c5c36dc011edd',
-        'sg-0b53f54a35481f314'
-    ],
+    KeyName='my-key-pair',
+    SecurityGroupIds=['sg-06decb6229594c4dc'],
 )[0]
 
 instance.wait_until_running()
@@ -31,12 +26,12 @@ private_key_file = io.StringIO(os.getenv('SSH_PRIVATE_KEY'))
 key = paramiko.RSAKey.from_private_key(private_key_file)
 ssh = paramiko.SSHClient()
 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-ssh.connect(ip, username=os.getenv('SSH_USERNAME', 'ubuntu'), pkey=key)
+ssh.connect(ip, username='ec2-user', pkey=key)
 
 # Run commands
 cmds = [
-    'cd /home/ubuntu',
-    'cd devops-midterm && git pull && docker compose up -d'
+    'cd /home/ec2-user',
+    'cd devops-final && sudo git pull && sudo docker compose up -d'
 ]
 for cmd in cmds:
     ssh.exec_command(cmd)

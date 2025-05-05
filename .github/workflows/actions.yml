@@ -21,17 +21,7 @@ jobs:
 
     - name: Run smoke test
       env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-        AWS_REGION: ${{ secrets.AWS_REGION }}
-        AWS_AMI_ID: ${{ secrets.AWS_AMI_ID }}
-        AWS_INSTANCE_TYPE: ${{ secrets.AWS_INSTANCE_TYPE }}
-        AWS_KEY_NAME: ${{ secrets.AWS_KEY_NAME }}
-        AWS_SECURITY_GROUP: ${{ secrets.AWS_SECURITY_GROUP }}
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        SSH_USERNAME: ubuntu
-        GIT_REPO_URL: https://github.com/parishoffman/devops-final.git
       run: python SmokeTest.py
 
   build-and-push:

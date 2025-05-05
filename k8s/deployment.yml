@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: <ECR_REPO_URI>/frontend:latest
+        image: 759743607521.dkr.ecr.us-east-1.amazonaws.com/frontend:latest
         ports:
         - containerPort: 80
         env:
@@ -42,7 +42,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: <ECR_REPO_URI>/backend:latest
+        image: 759743607521.dkr.ecr.us-east-1.amazonaws.com/backend:latest
         ports:
         - containerPort: 8080
         env:
