@@ -77,6 +77,7 @@ jobs:
       
       - name: Deploy the rollouts
         run: |
+          echo "TAG: $TAG"
           envsubst < k8s/service.yaml | kubectl -n $NAMESPACE apply -f -
           envsubst < k8s/rollout.yaml | kubectl -n $NAMESPACE apply -f -
           kubectl argo rollouts set image frontend-rollout frontend="759743607521.dkr.ecr.us-east-1.amazonaws.com/frontend:$TAG" -n $NAMESPACE
