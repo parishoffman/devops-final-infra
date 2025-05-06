@@ -59,13 +59,13 @@ jobs:
         env:
           KUBECONFIG: ./kubeconfig.yaml
 
-      - name: Deploy Ingress Controller
-        env:
-          KUBECONFIG: ./kubeconfig.yaml
-        run: |
-          helm upgrade --install ingress-nginx ingress-nginx \
-            --repo https://kubernetes.github.io/ingress-nginx \
-            --namespace ingress-nginx
+      # - name: Deploy Ingress Controller
+      #   env:
+      #     KUBECONFIG: ./kubeconfig.yaml
+      #   run: |
+      #     helm upgrade --install ingress-nginx ingress-nginx \
+      #       --repo https://kubernetes.github.io/ingress-nginx \
+      #       --namespace ingress-nginx
 
       - name: Install Argo Rollouts kubectl plugin
         run: |
