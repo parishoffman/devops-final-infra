@@ -16,6 +16,16 @@ jobs:
     environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Source Repo
+        uses: actions/checkout@v4
+        with:
+          repository: parishoffman/devops-final
+          fetch-tags: true
+          
+      - name: Get latest tag
+        id: get-tag
+        run: echo "tag=$(git tag --list --sort=v:refname | head -n 1 | sed 's/^.//')" >> $GITHUB_OUTPUT
+
       - name: Checkout code
         uses: actions/checkout@v3
       
@@ -67,10 +77,11 @@ jobs:
       
       - name: Deploy the rollouts
         run: |
-          kubectl -n ${{ inputs.environment }} apply -f k8s/deployment.yaml
-          kubectl -n ${{ inputs.environment }} apply -f k8s/service.yaml
-          kubectl -n ${{ inputs.environment }} apply -f k8s/rollout.yaml
-          kubectl argo rollouts set image frontend-rollout frontend="759743607521.dkr.ecr.us-east-1.amazonaws.com/frontend:latest" -n ${{ inputs.environment }}
-          kubectl argo rollouts set image backend-rollout backend="759743607521.dkr.ecr.us-east-1.amazonaws.com/backend:latest" -n ${{ inputs.environment }}
+          envsubst < k8s/service.yaml | kubectl -n $NAMESPACE apply -f -
+          envsubst < k8s/rollout.yaml | kubectl -n $NAMESPACE apply -f -
+          kubectl argo rollouts set image frontend-rollout frontend="759743607521.dkr.ecr.us-east-1.amazonaws.com/frontend:$TAG" -n $NAMESPACE
+          kubectl argo rollouts set image backend-rollout backend="759743607521.dkr.ecr.us-east-1.amazonaws.com/backend:$TAG" -n $NAMESPACE
         env:
           KUBECONFIG: ./kubeconfig.yaml
+          NAMESPACE: ${{ inputs.environment }}
+          TAG: ${{ env.tag }}
