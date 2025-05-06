@@ -47,25 +47,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Build, tag, and push Docker images
-        env:
-          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_URI }}
-          TAG: ${{ steps.get-tag.outputs.tag }}
-        run: |
-          for service in frontend backend; do
-            cd $service
-            docker build -t $service .
-
-            docker tag $service $ECR_REPOSITORY/$service:$TAG
-
-            docker push $ECR_REPOSITORY/$service:$TAG
-            cd ..
-          done
           
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.8.0
